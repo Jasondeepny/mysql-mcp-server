@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: mysql-mcp-server
+    version: 1.0.0
+  
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:test}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:123}
+    database: ${MYSQL_DATABASE:test}
+    # 添加 Hikari 连接池配置
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      connection-timeout: 20000
+      connection-test-query: SELECT 1
+      pool-name: mcp-server-pool
+      max-lifetime: 1800000
+      validation-timeout: 5000
+      connection-init-sql: SET NAMES utf8mb4;
+
+
+  # MCP 配置
+  ai:
+    mcp:
+      server:
+        mcp: webmvc-sse
+        path: /mcp
+        # 添加超时和重试配置
+        timeout: 30000
+        retry:
+          max-attempts: 3
+          initial-interval: 1000
+          multiplier: 2.0
+        # 添加错误处理配置
+        error-handling:
+          log-stack-trace: true
+          return-detailed-errors: false
+
+# 服务器配置
+server:
+  port: ${SERVER_PORT:8080}
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 10
+    connection-timeout: 5000
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.zcckj.mcpserver: DEBUG
+    org.springframework: INFO
+  file:
+    name: logs/mcp-server.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
