@@ -1,4 +1,4 @@
-package com.zcckj.mcp.mysql;
+package com.zcckj.mcp.mysql.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.zcckj.mcp.mysql.config.DataBaseConfig;
+import com.zcckj.mcp.mysql.model.DbTool;
+import com.zcckj.mcp.mysql.model.Resource;
+import com.zcckj.mcp.mysql.model.TextContent;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.annotation.Autowired;

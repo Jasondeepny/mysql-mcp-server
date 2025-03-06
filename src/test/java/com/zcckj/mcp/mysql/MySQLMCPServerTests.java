@@ -1,5 +1,6 @@
 package com.zcckj.mcp.mysql;
 
+import com.zcckj.mcp.mysql.service.MysqlMcpServerService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

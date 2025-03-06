@@ -1,4 +1,4 @@
-package com.zcckj.mcp.mysql;
+package com.zcckj.mcp.mysql.model;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,5 +1,6 @@
 package com.zcckj.mcp.mysql;
 
+import com.zcckj.mcp.mysql.service.MysqlMcpServerService;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.boot.SpringApplication;

@@ -1,4 +1,4 @@
-package com.zcckj.mcp.mysql;
+package com.zcckj.mcp.mysql.config;
 
 import javax.sql.DataSource;
 
