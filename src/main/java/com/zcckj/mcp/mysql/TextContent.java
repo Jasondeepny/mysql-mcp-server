@@ -1,4 +1,4 @@
-package com.zcckj.mcpserver;
+package com.zcckj.mcp.mysql;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

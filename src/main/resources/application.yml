@@ -1,16 +1,17 @@
 spring:
   application:
     name: mysql-mcp-server
-    version: 1.0.0
-  
+  main:
+    banner-mode: off
+    web-application-type: none
+
   # 数据库配置
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:test}
+    url: jdbc:mysql://localhost:3306/test
+    username: root
+    password: 123
+    database: test
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${MYSQL_USERNAME:root}
-    password: ${MYSQL_PASSWORD:123}
-    database: ${MYSQL_DATABASE:test}
-    # 添加 Hikari 连接池配置
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -27,26 +28,10 @@ spring:
   ai:
     mcp:
       server:
-        mcp: webmvc-sse
-        path: /mcp
-        # 添加超时和重试配置
-        timeout: 30000
-        retry:
-          max-attempts: 3
-          initial-interval: 1000
-          multiplier: 2.0
-        # 添加错误处理配置
-        error-handling:
-          log-stack-trace: true
-          return-detailed-errors: false
-
-# 服务器配置
-server:
-  port: ${SERVER_PORT:8080}
-  tomcat:
-    max-threads: 200
-    min-spare-threads: 10
-    connection-timeout: 5000
+        name: mysql-mcp-server
+        transport: STDIO
+        version: 1.0.0
+        type: SYNC
 
 # 日志配置
 logging:

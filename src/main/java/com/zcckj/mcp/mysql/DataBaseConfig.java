@@ -1,15 +1,19 @@
-package com.zcckj.mcpserver;
+package com.zcckj.mcp.mysql;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import lombok.Getter;
-import lombok.Setter;
+import javax.sql.DataSource;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.sql.DataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Configuration
 @ConfigurationProperties(prefix = "spring.datasource")
 @Getter
@@ -28,7 +32,7 @@ public class DataBaseConfig {
         config.setUsername(username);
         config.setPassword(password);
         config.setDriverClassName(driverClassName);
-
+        log.info("------- spring datasource url: {}", url);
         // 检查 JDBC URL 是否正确
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("JDBC URL is required.");

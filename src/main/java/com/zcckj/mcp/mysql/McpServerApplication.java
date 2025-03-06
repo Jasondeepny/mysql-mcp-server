@@ -1,4 +1,4 @@
-package com.zcckj.mcpserver;
+package com.zcckj.mcp.mysql;
 
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
