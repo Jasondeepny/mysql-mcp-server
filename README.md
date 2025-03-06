@@ -13,7 +13,7 @@ mysql-mcp-server. java version
         "-Dspring.datasource.username= *",
         "-Dspring.datasource.password= *",
         "-jar",
-        "/Library/GoWorkSpace/mysql-mcp-server/target/mysql-mcp-server-0.0.1-SNAPSHOT.jar"
+        "/absolute/path/mysql-mcp-server-0.0.1-SNAPSHOT.jar"
       ]
     }
   }
