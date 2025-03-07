@@ -55,7 +55,7 @@ public class JsonUtils {
             if (object == null) {
                 return null;
             }
-            return MAPPER.writeValueAsString(object);
+            return cleanJsonString(MAPPER.writeValueAsString(object));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -109,5 +109,18 @@ public class JsonUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 清理JSON字符串中的特殊字符
+     */
+    private static String cleanJsonString(String json) {
+        if (json == null) {
+            return null;
+        }
+        // 移除BOM标记和其他可能导致解析错误的字符
+        return json.trim()
+                .replaceAll("^\\uFEFF", "") // 移除BOM
+                .replaceAll("[\\x00-\\x09\\x0B\\x0C\\x0E-\\x1F]", ""); // 移除控制字符
     }
 }
