@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.zcckj</groupId>
     <artifactId>mysql-mcp-server</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>mysql-mcp-server</name>
     <description>mysql-mcp-server</description>
 

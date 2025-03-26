@@ -14,7 +14,17 @@ public class MySQLMCPServerTests {
     @Test
     void testListResources() {
         // 测试资源列表
-        mcpClient.listResources();
+        String result = mcpClient.listDatabases();
+        System.out.println(result);
+        String result2 = mcpClient.listTables("purch_order");
+        System.out.println(result2);
+    }
+
+    @Test
+    void testReadResource() {
+        String s = "mysql://purch_order/t_purch_order/data";
+        String result = mcpClient.readResource(s);
+        System.out.println(result);
     }
 
     @Test
@@ -22,13 +32,21 @@ public class MySQLMCPServerTests {
         // 测试SQL执行工具
         String query = "SELECT * FROM t_supplier_info LIMIT 10";
         // 如果需要测试executeSql方法，可以这样：
-        mcpClient.executeSql(query);
+        String result = mcpClient.executeSql(query);
+        System.out.println(result);
+
+
+        String[] parts = "mysql://purch_order/t_supplier_info/data".substring("mysql://".length()).split("/");
+        System.out.println(parts[0]);
+        System.out.println(parts[1]);
+        System.out.println(parts[2]);
 //        assertThat(textContent.getText()).isNotNull();
     }
 
     @Test
     void testInvalidQuery() {
-        mcpClient.listTools();
+        String result = mcpClient.listTools();
+        System.out.println(result);
 //        for (DbTool dbTool : dbTools) {
 //            if (dbTool.getName().equals("execute_sql")) {
         // 测试无效的SQL查询

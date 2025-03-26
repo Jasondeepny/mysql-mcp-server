@@ -13,7 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,14 +27,17 @@ public class MysqlMcpServerService {
     @Autowired
     private DataBaseConfig databaseConfig;
 
-    @Tool(description = "List the available resources")
-    public String listResources() {
+    @Tool(description = "List the available tables", name = "list_tables")
+    public String listTables(@ToolParam(description = "database") String database) {
         try {
-            List<String> tables = jdbcTemplate.queryForList("SHOW TABLES", String.class);
-
+            List<String> tables = jdbcTemplate.queryForList(String.format("SHOW TABLES FROM %s", database),
+                    String.class);
+            if (tables.isEmpty()) {
+                return JsonUtils.toJsonString(new TextContent("No tables found in database: " + database, "text"));
+            }
             List<Resource> resources = tables.stream()
                     .map(table -> Resource.builder()
-                            .uri("mysql://" + table + "/data")
+                            .uri("mysql://" + database + "/" + table)
                             .name("Table: " + table)
                             .mimeType("text/plain")
                             .description("Data in table: " + table)
@@ -47,22 +50,48 @@ public class MysqlMcpServerService {
         }
     }
 
-    @Tool(description = "Read a resource from the MySQL server")
-    public String readResource(@ToolParam(description = "mysql://table/data") String uri) {
+    @Tool(description = "List the available databases", name = "list_databases")
+    public String listDatabases() {
+        try {
+            List<String> databases = jdbcTemplate.queryForList("SHOW DATABASES", String.class);
+
+            List<Resource> resources = databases.stream()
+                    .map(database -> Resource.builder()
+                            .uri("mysql://" + database + "/table")
+                            .name("Database: " + database)
+                            .mimeType("text/plain")
+                            .description("Table in database: " + database)
+                            .build())
+                    .collect(Collectors.toList());
+            return JsonUtils.toJsonString(resources);
+        } catch (Exception e) {
+            log.error("Failed to list resources", e);
+            throw new RuntimeException("Database error: " + e.getMessage());
+        }
+    }
+
+    @Tool(description = "Read a data resource from the table in the database", name = "read_resource")
+    public String readResource(@ToolParam(description = "mysql://database/table") String uri) {
         if (!uri.startsWith("mysql://")) {
             log.error("Invalid URI scheme:{} ", uri);
             return JsonUtils.toJsonString(new TextContent("Invalid URI scheme: " + uri, "text"));
         }
-        String table = uri.substring(8).split("/")[0];
+        String[] parts = uri.substring("mysql://".length()).split("/");
+        if (parts.length < 2) {
+            log.error("Invalid URI format: {}", uri);
+            return JsonUtils.toJsonString(new TextContent("Invalid URI format: " + uri, "text"));
+        }
+        String database = parts[0];
+        String table = parts[1];
         try {
             List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                    "SELECT * FROM " + table + " LIMIT 100");
+                    String.format("SELECT * FROM %s.%s ORDER BY id DESC LIMIT 100", database, table));
             if (rows.isEmpty()) {
                 log.error("No data found in table: {}", table);
                 return JsonUtils.toJsonString(new TextContent("No data found in table: " + table, "text"));
             }
             // 获取列名
-            String headers = String.join(",", rows.get(0).keySet());
+            String headers = String.join("|", rows.get(0).keySet());
             List<String> dataRows = rows.stream()
                     .map(row -> row.values().stream()
                             .map(String::valueOf)
@@ -78,9 +107,9 @@ public class MysqlMcpServerService {
         }
     }
 
-    @Tool(description = "List the available tools")
+    @Tool(description = "List the available tools", name = "list_tools")
     public String listTools() {
-        List<DbTool> dbTools = Collections.singletonList(
+        List<DbTool> dbTools = Arrays.asList(
                 DbTool.builder().name("execute_sql")
                         .description("Execute an SQL query on the MySQL server")
                         .inputSchema(Map.of(
@@ -90,11 +119,21 @@ public class MysqlMcpServerService {
                                                 "type", "string",
                                                 "description", "The SQL query to execute")),
                                 "required", List.of("query")))
+                        .build(),
+                DbTool.builder().name("list_tables")
+                        .description("List all tables in the database")
+                        .inputSchema(Map.of(
+                                "type", "object",
+                                "properties", Map.of(
+                                        "database", Map.of(
+                                                "type", "string",
+                                                "description", "The database to list tables from")),
+                                "required", List.of("database")))
                         .build());
         return JsonUtils.toJsonString(dbTools);
     }
 
-    @Tool(description = "Execute an SQL query on the MySQL server")
+    @Tool(description = "Execute an SQL query on the MySQL server", name = "execute_sql")
     public String executeSql(@ToolParam(description = "sql str") String query) {
         try {
             if (!isValidSqlQuery(query)) {
@@ -102,8 +141,8 @@ public class MysqlMcpServerService {
             }
             if (query.trim().toUpperCase().startsWith("SHOW TABLES")) {
                 List<String> tables = jdbcTemplate.queryForList(query, String.class);
-                String result = "Tables_in_" + databaseConfig.getDatabase() + "\n" +
-                        String.join("\n", tables);
+                String result = String.format("Tables_in_%s\n%s", databaseConfig.getDatabase(),
+                        String.join("\n", tables));
                 return JsonUtils.toJsonString(new TextContent(result, "text"));
             }
             if (query.trim().toUpperCase().startsWith("SELECT")) {
@@ -111,7 +150,7 @@ public class MysqlMcpServerService {
                 if (rows.isEmpty()) {
                     return JsonUtils.toJsonString(new TextContent("No data found.", "text"));
                 }
-                String headers = String.join(",", rows.get(0).keySet());
+                String headers = String.join("|", rows.get(0).keySet());
                 List<String> dataRows = rows.stream()
                         .map(row -> row.values().stream()
                                 .map(String::valueOf)
@@ -131,9 +170,23 @@ public class MysqlMcpServerService {
         }
     }
 
-    // 实现 SQL 注入检查逻辑
+    // 检查是否为有效的SQL查询
     private boolean isValidSqlQuery(String query) {
-        return query != null && !query.toLowerCase().contains("drop")
-                && !query.toLowerCase().contains("delete");
+        // 判断是否为 sql
+        if (query == null || query.trim().isEmpty()) {
+            return false;
+        }
+        // 转换为小写进行检查
+        String lowerQuery = query.toLowerCase().trim();
+        // 检查是否以常见SQL关键字开头
+        String[] validKeywords = {
+                "select", "show", "desc", "describe", "explain",
+                "insert", "update", "create", "alter", "grant",
+                "use", "set"
+        };
+        return Arrays.stream(validKeywords)
+                .anyMatch(keyword -> lowerQuery.startsWith(keyword + " "))
+                && !lowerQuery.contains("drop")
+                && !lowerQuery.contains("delete");
     }
 }
