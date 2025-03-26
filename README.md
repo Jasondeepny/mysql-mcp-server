@@ -1,6 +1,10 @@
-# mysql-mcp-server
-mysql-mcp-server -- java version
+# Mysql-Mcp-Server
 
+## Project Features:
+    -- mcp server for Java version
+    -- Support for multiple data sources
+    -- STDIO 
+    -- springboot starter
 
 ```bash 
   ./mvnw clean package -Dmaven.test.skip=true
