@@ -73,7 +73,7 @@ public class JsonUtils {
 
     public static <T, E> Map<T, E> toMap(String json, Class<T> clazz, Class<E> eClass) {
         try {
-            if (StringUtils.hasText(json)) {
+            if (!StringUtils.hasText(json)) {
                 return null;
             }
             JavaType javaType = MAPPER.getTypeFactory().constructParametricType(Map.class, clazz, eClass);
@@ -86,7 +86,7 @@ public class JsonUtils {
 
     public static <T> List<T> toList(String json, Class<T> clazz) {
         try {
-            if (StringUtils.hasText(json)) {
+            if (!StringUtils.hasText(json)) {
                 return null;
             }
             JavaType javaType = MAPPER.getTypeFactory().constructParametricType(ArrayList.class, clazz);
