@@ -62,7 +62,7 @@ public class JsonUtils {
     }
 
     public static <T> T toObject(String json, Class<T> clazz) {
-        Assert.isTrue(!StringUtils.hasText(json), "json cannot be empty");
+        Assert.isTrue(StringUtils.hasText(json), "json cannot be empty");
         Assert.notNull(clazz, "clazz cannot be null");
         try {
             return MAPPER.readValue(json, clazz);
